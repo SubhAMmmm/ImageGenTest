@@ -127,8 +127,8 @@ if st.button("Generate My Name Image", type="primary"):
 
 # Side panel for database display
 with st.sidebar:
-    st.markdown("## User Inputs")
-    if st.checkbox("Show User Inputs"):
+    st.markdown("## Denominate")
+    if st.checkbox("Denominative detail"):
         c.execute("SELECT name, design_description, timestamp FROM user_inputs ORDER BY timestamp DESC")
         rows = c.fetchall()
         if rows:
