@@ -3,12 +3,28 @@ from huggingface_hub import InferenceClient
 from PIL import Image, ImageEnhance
 import io
 import time
+import sqlite3
 
 # Set up the Hugging Face Inference Client
 client = InferenceClient("stabilityai/stable-diffusion-3.5-large-turbo", token="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")
 
+# Set up SQLite database
+conn = sqlite3.connect("user_data.db")
+c = conn.cursor()
+
+# Create table if it doesn't exist
+c.execute("""
+CREATE TABLE IF NOT EXISTS user_inputs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    design_description TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+""")
+conn.commit()
+
 # Streamlit app configuration
-st.set_page_config(page_title="Personalized Name Image Generator", page_icon="✨")
+st.set_page_config(page_title="Personalized Name Image Generator", page_icon="✨", layout="wide", initial_sidebar_state="collapsed")
 
 # Custom CSS for better styling
 st.markdown("""
@@ -53,6 +69,10 @@ with col2:
 # Generate Image Button
 if st.button("Generate My Name Image", type="primary"):
     if user_name and design_description:
+        # Store user input in database
+        c.execute("INSERT INTO user_inputs (name, design_description) VALUES (?, ?)", (user_name, design_description))
+        conn.commit()
+
         # Construct enhanced prompt
         prompt = (
             f"A magical and vibrant 1080x1080 composition prominently featuring the name '{user_name}' in 3D, "
@@ -104,6 +124,18 @@ if st.button("Generate My Name Image", type="primary"):
                 st.error(f"Error generating image: {e}")
     else:
         st.warning("Please enter your name and describe your design style")
+
+# Side panel for database display
+with st.sidebar:
+    st.markdown("## User Inputs")
+    if st.checkbox("Show User Inputs"):
+        c.execute("SELECT name, design_description, timestamp FROM user_inputs ORDER BY timestamp DESC")
+        rows = c.fetchall()
+        if rows:
+            for row in rows:
+                st.markdown(f"- **Name**: {row[0]} | **Design**: {row[1]} | **Timestamp**: {row[2]}")
+        else:
+            st.info("No data available.")
 
 # Footer
 st.markdown("---")
