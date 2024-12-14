@@ -129,13 +129,20 @@ if st.button("Generate My Name Image", type="primary"):
 with st.sidebar:
     st.markdown("## Denominate")
     if st.checkbox("Denominative detail"):
-        c.execute("SELECT name, design_description, timestamp FROM user_inputs ORDER BY timestamp DESC")
-        rows = c.fetchall()
-        if rows:
-            for row in rows:
-                st.markdown(f"- **Name**: {row[0]} | **Design**: {row[1]} | **Timestamp**: {row[2]}")
-        else:
-            st.info("No data available.")
+        password = st.text_input("Enter Password", type="password")
+        correct_password = "secure123"  # Replace with your desired password
+
+        if password:
+            if password == correct_password:
+                c.execute("SELECT name, design_description, timestamp FROM user_inputs ORDER BY timestamp DESC")
+                rows = c.fetchall()
+                if rows:
+                    for row in rows:
+                        st.markdown(f"- **Name**: {row[0]} | **Design**: {row[1]} | **Timestamp**: {row[2]}")
+                else:
+                    st.info("No data available.")
+            else:
+                st.error("Incorrect password. Please try again.")
 
 # Footer
 st.markdown("---")
